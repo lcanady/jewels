@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Board from './Board';
 import Score from './Score';
-import { createInitialGrid, checkForMatches, generateRandomJewel } from '../utils/gameUtils';
+import { createInitialGrid, checkForMatches, generateRandomJewel, GRID_SIZE } from '../utils/gameUtils';
 import { playSound } from '../utils/soundEffects';
 
 const Game: React.FC = () => {
@@ -16,6 +16,38 @@ const Game: React.FC = () => {
   const [newJewels, setNewJewels] = useState<[number, number][]>([]);
 
   useEffect(() => {
+    const dropJewels = (grid: string[][], matches: [number, number][]) => {
+      const newGrid = grid.map(row => [...row]);
+      const newJewelsPositions: [number, number][] = [];
+      const columns = new Set(matches.map(([, col]) => col));
+
+      // Process each affected column
+      columns.forEach(col => {
+        let emptyRow = GRID_SIZE - 1;
+        
+        // Find empty spaces and shift jewels down
+        for (let row = GRID_SIZE - 1; row >= 0; row--) {
+          if (!matches.some(([matchRow, matchCol]) => matchRow === row && matchCol === col)) {
+            if (emptyRow !== row) {
+              newGrid[emptyRow][col] = newGrid[row][col];
+              newJewelsPositions.push([emptyRow, col]);
+            }
+            emptyRow--;
+          }
+        }
+
+        // Fill empty spaces with new jewels
+        while (emptyRow >= 0) {
+          const newJewel = generateRandomJewel();
+          newGrid[emptyRow][col] = newJewel;
+          newJewelsPositions.push([emptyRow, col]);
+          emptyRow--;
+        }
+      });
+
+      return { newGrid, newJewelsPositions };
+    };
+
     const checkAndUpdateGrid = () => {
       const matches = checkForMatches(grid);
       if (matches.length > 0) {
@@ -24,16 +56,7 @@ const Game: React.FC = () => {
         playSound('match');
         
         setTimeout(() => {
-          const newGrid = [...grid];
-          const newJewelsPositions: [number, number][] = [];
-          matches.forEach(([row, col]) => {
-            for (let i = row; i > 0; i--) {
-              newGrid[i][col] = newGrid[i - 1][col];
-              newJewelsPositions.push([i, col]);
-            }
-            newGrid[0][col] = generateRandomJewel();
-            newJewelsPositions.push([0, col]);
-          });
+          const { newGrid, newJewelsPositions } = dropJewels(grid, matches);
           setGrid(newGrid);
           setNewJewels(newJewelsPositions);
           setMatchedJewels([]);

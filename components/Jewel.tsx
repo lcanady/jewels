@@ -15,17 +15,31 @@ const Jewel: React.FC<JewelProps> = ({ type, onClick, isSelected, isMatched, pos
   return (
     <motion.div
       layout
-      initial={isNew ? { y: -100, opacity: 0 } : false}
-      animate={{ opacity: 1 }}
+      initial={isNew ? { 
+        y: -100 * (position.row + 1), 
+        opacity: 0,
+        scale: 0.8 
+      } : false}
+      animate={{ 
+        y: 0, 
+        opacity: 1,
+        scale: 1
+      }}
       transition={{ 
-        type: 'spring', 
-        stiffness: 300, 
-        damping: 30,
+        type: 'spring',
+        damping: 20,
+        stiffness: 300,
+        mass: 0.8,
         delay: isNew ? position.row * 0.1 : 0,
       }}
       className="w-full h-full"
     >
-      <Coin color={getJewelColor(type)} onClick={onClick} isSelected={isSelected} isMatched={isMatched} />
+      <Coin 
+        color={getJewelColor(type)} 
+        onClick={onClick} 
+        isSelected={isSelected} 
+        isMatched={isMatched} 
+      />
     </motion.div>
   );
 };
@@ -48,4 +62,3 @@ function getJewelColor(type: string) {
 }
 
 export default Jewel;
-
