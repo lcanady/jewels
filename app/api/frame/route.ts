@@ -2,8 +2,28 @@ import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
+interface FrameRequestData {
+  untrustedData?: {
+    buttonIndex?: number;
+    inputText?: string;
+    castId?: {
+      fid?: number;
+      hash?: string;
+    };
+    timestamp?: number;
+    network?: number;
+    transactionId?: string;
+    address?: string;
+  };
+  trustedData?: {
+    messageBytes?: string;
+    timestamp?: number;
+    network?: number;
+  };
+}
+
 export async function POST(req: NextRequest) {
-  const data = await req.json()
+  const data: FrameRequestData = await req.json()
   
   // Validate the frame request
   const { isValid, message } = await validateFrameRequest(data)
@@ -38,7 +58,7 @@ export async function POST(req: NextRequest) {
   )
 }
 
-async function validateFrameRequest(data: any) {
+async function validateFrameRequest(data: FrameRequestData) {
   try {
     const { untrustedData, trustedData } = data
     
@@ -49,7 +69,7 @@ async function validateFrameRequest(data: any) {
     // Add more validation as needed
     
     return { isValid: true, message: 'Valid frame request' }
-  } catch (error) {
-    return { isValid: false, message: 'Invalid frame request' }
+  } catch  {
+    return { isValid: false, message: 'Validation error' }
   }
 }
