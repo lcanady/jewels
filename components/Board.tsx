@@ -1,6 +1,5 @@
 import React from 'react';
 import Jewel from './Jewel';
-import { GRID_SIZE } from '../utils/gameUtils';
 
 interface BoardProps {
   grid: string[][];
@@ -33,4 +32,3 @@ const Board: React.FC<BoardProps> = ({ grid, onJewelClick, selectedJewel, matche
 };
 
 export default Board;
-

@@ -70,23 +70,32 @@ const Game: React.FC = () => {
         (Math.abs(col - selectedCol) === 1 && row === selectedRow)
       ) {
         setIsAnimating(true);
-        const newGrid = [...grid];
-        [newGrid[row][col], newGrid[selectedRow][selectedCol]] = [newGrid[selectedRow][selectedCol], newGrid[row][col]];
-        setGrid(newGrid);
-        playSound('swap');
-      
-        setTimeout(() => {
-          const matches = checkForMatches(newGrid);
-          if (matches.length === 0) {
-            [newGrid[row][col], newGrid[selectedRow][selectedCol]] = [newGrid[selectedRow][selectedCol], newGrid[row][col]];
-            setGrid(newGrid);
+        const newGrid = grid.map(row => [...row]);  
+        const temp = newGrid[row][col];
+        newGrid[row][col] = newGrid[selectedRow][selectedCol];
+        newGrid[selectedRow][selectedCol] = temp;
+        
+        const matches = checkForMatches(newGrid);
+        
+        if (matches.length === 0) {
+          setTimeout(() => {
+            const revertGrid = newGrid.map(row => [...row]);
+            revertGrid[row][col] = revertGrid[selectedRow][selectedCol];
+            revertGrid[selectedRow][selectedCol] = temp;
+            setGrid(revertGrid);
+            setIsAnimating(false);
+            setSelectedJewel(null);
             playSound('swap');
-          } else {
-            setMatchedJewels(matches);
-          }
-          setIsAnimating(false);
-          setSelectedJewel(null);
-        }, 500);
+          }, 500);
+        } else {
+          setGrid(newGrid);
+          setMatchedJewels(matches);
+          playSound('swap');
+          setTimeout(() => {
+            setIsAnimating(false);
+            setSelectedJewel(null);
+          }, 500);
+        }
       } else {
         setSelectedJewel(null);
       }
